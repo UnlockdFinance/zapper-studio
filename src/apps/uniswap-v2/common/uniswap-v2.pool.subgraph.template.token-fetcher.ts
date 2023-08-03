@@ -47,7 +47,9 @@ export abstract class UniswapV2PoolSubgraphTemplateTokenFetcher<
   async getAddresses() {
     // Initialize volume dataloader
     const dataLoaderOptions = { cache: true, maxBatchSize: 1000 };
-    this.volumeDataLoader = new DataLoader<string, number>(this.batchGetVolume.bind(this), dataLoaderOptions);
+    if (!this.skipVolume) {
+      this.volumeDataLoader = new DataLoader<string, number>(this.batchGetVolume.bind(this), dataLoaderOptions);
+    }
 
     const chunks = await Promise.all(
       range(0, this.first, 1000).map(skip => {
@@ -94,7 +96,7 @@ export abstract class UniswapV2PoolSubgraphTemplateTokenFetcher<
     const volume = this.volumeDataLoader ? await this.volumeDataLoader.load(appToken.address) : 0;
     const yearlyFees = volume * (this.fee / 100) * 365;
     const apy = yearlyFees / liquidity;
-    return apy;
+    return apy * 100;
   }
 
   async getDataProps(params: GetDataPropsParams<T, UniswapV2TokenDataProps>) {

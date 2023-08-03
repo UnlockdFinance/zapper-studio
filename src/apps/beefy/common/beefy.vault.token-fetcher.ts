@@ -6,8 +6,10 @@ import { AppTokenTemplatePositionFetcher } from '~position/template/app-token.te
 import {
   DefaultAppTokenDataProps,
   GetAddressesParams,
+  GetDataPropsParams,
   GetDisplayPropsParams,
   GetPricePerShareParams,
+  GetTokenPropsParams,
   GetUnderlyingTokensParams,
 } from '~position/template/app-token.template.types';
 
@@ -21,6 +23,7 @@ export type BeefyVaultTokenDefinition = {
   id: string;
   marketName: string;
   symbol: string;
+  apy: number;
 };
 
 export abstract class BeefyVaultTokenFetcher extends AppTokenTemplatePositionFetcher<
@@ -41,6 +44,10 @@ export abstract class BeefyVaultTokenFetcher extends AppTokenTemplatePositionFet
     return this.contractFactory.beefyVaultToken({ network: this.network, address });
   }
 
+  async getDecimals({ appToken }: GetTokenPropsParams<BeefyVaultToken>): Promise<number> {
+    return appToken.tokens[0].decimals;
+  }
+
   async getDefinitions(): Promise<BeefyVaultTokenDefinition[]> {
     return this.tokenDefinitionsResolver.getVaultDefinitions(this.network);
   }
@@ -55,13 +62,17 @@ export abstract class BeefyVaultTokenFetcher extends AppTokenTemplatePositionFet
     return [{ address: definition.underlyingAddress, network: this.network }];
   }
 
-  async getPricePerShare({ contract, appToken, multicall }: GetPricePerShareParams<BeefyVaultToken>) {
+  async getPricePerShare({ contract, multicall }: GetPricePerShareParams<BeefyVaultToken>) {
     const ratioRaw = await multicall.wrap(contract).getPricePerFullShare();
-    const ratio = Number(ratioRaw) / 10 ** appToken.decimals;
+    const ratio = Number(ratioRaw) / 10 ** 18;
     return [ratio];
   }
 
   async getLabel({ appToken }: GetDisplayPropsParams<BeefyVaultToken>) {
     return `${getLabelFromToken(appToken.tokens[0])} Vault`;
+  }
+
+  getApy({ definition }: GetDataPropsParams<BeefyVaultToken, DefaultAppTokenDataProps, BeefyVaultTokenDefinition>) {
+    return Promise.resolve(definition.apy * 100);
   }
 }

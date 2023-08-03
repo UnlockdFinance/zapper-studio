@@ -1,14 +1,8 @@
 import { Inject } from '@nestjs/common';
-import BigNumber from 'bignumber.js';
 
 import { APP_TOOLKIT, IAppToolkit } from '~app-toolkit/app-toolkit.interface';
 import { AppTokenTemplatePositionFetcher } from '~position/template/app-token.template.position-fetcher';
-import {
-  GetAddressesParams,
-  GetDataPropsParams,
-  GetPricePerShareParams,
-  GetUnderlyingTokensParams,
-} from '~position/template/app-token.template.types';
+import { GetAddressesParams, GetUnderlyingTokensParams } from '~position/template/app-token.template.types';
 
 import { WombatExchangePoolToken, WombatExchangeContractFactory } from '../contracts';
 
@@ -44,28 +38,5 @@ export abstract class WombatExchangePoolTokenFetcher extends AppTokenTemplatePos
 
   async getUnderlyingTokenDefinitions({ contract }: GetUnderlyingTokensParams<WombatExchangePoolToken>) {
     return [{ address: await contract.underlyingToken(), network: this.network }];
-  }
-
-  async getPricePerShare({ contract, multicall, appToken }: GetPricePerShareParams<WombatExchangePoolToken>) {
-    const poolAddress = await contract.pool();
-    const _pool = this.contractFactory.wombatExchangePool({ address: poolAddress, network: this.network });
-    const pool = multicall.wrap(_pool);
-
-    const amount = new BigNumber(10).pow(appToken.tokens[0].decimals).toFixed(0);
-    const pricePerShareRaw = await pool.quotePotentialWithdraw(appToken.tokens[0].address, amount);
-    const pricePerShare = Number(pricePerShareRaw.amount) / 10 ** appToken.decimals;
-    return [pricePerShare];
-  }
-
-  async getLiquidity({ appToken }: GetDataPropsParams<WombatExchangePoolToken>) {
-    return appToken.supply * appToken.price;
-  }
-
-  async getReserves({ appToken }: GetDataPropsParams<WombatExchangePoolToken>) {
-    return [appToken.pricePerShare[0] * appToken.supply];
-  }
-
-  async getApy(_params: GetDataPropsParams<WombatExchangePoolToken>) {
-    return 0;
   }
 }

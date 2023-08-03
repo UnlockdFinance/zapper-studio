@@ -13,6 +13,7 @@ import {
   GetDataPropsParams,
   GetUnderlyingTokensParams,
   GetDisplayPropsParams,
+  DefaultAppTokenDataProps,
 } from '~position/template/app-token.template.types';
 
 import { SushiswapKashiContractFactory, SushiswapKashiLendingToken } from '../contracts';
@@ -25,10 +26,7 @@ type SushiswapKashiLendingTokenDefinition = {
   borrowAPR: string;
 };
 
-type SushiswapKashiLendingTokenDataProps = {
-  liquidity: number;
-  reserves: number[];
-  apy: number;
+type SushiswapKashiLendingTokenDataProps = DefaultAppTokenDataProps & {
   supplyApr: number;
   borrowApr: number;
 };
@@ -112,18 +110,6 @@ export abstract class SushiswapKashiLendingTokenFetcher extends AppTokenTemplate
 
   async getPricePerShare() {
     return [1, 0];
-  }
-
-  async getLiquidity({ appToken }: GetDataPropsParams<SushiswapKashiLendingToken>) {
-    return appToken.supply * appToken.price;
-  }
-
-  async getReserves({ appToken }: GetDataPropsParams<SushiswapKashiLendingToken>) {
-    return (appToken.pricePerShare as number[]).map(v => v * appToken.supply);
-  }
-
-  async getApy(_params: GetDataPropsParams<SushiswapKashiLendingToken>) {
-    return 0;
   }
 
   async getDataProps(

@@ -10,7 +10,9 @@ import { BinanceSmartChainPancakeswapFarmContractPositionFetcher } from './binan
 import { BinanceSmartChainPancakeswapIfoCakeContractPositionFetcher } from './binance-smart-chain/pancakeswap.ifo-cake.contract-position-fetcher';
 import { BinanceSmartChainPancakeswapPoolAddressCacheManager } from './binance-smart-chain/pancakeswap.pool.cache-manager';
 import { BinanceSmartChainPancakeSwapPoolTokenFetcher } from './binance-smart-chain/pancakeswap.pool.token-fetcher';
+import { BinanceSmartChainPancakeswapStablePoolTokenFetcher } from './binance-smart-chain/pancakeswap.stable-pool.token-fetcher';
 import { BinanceSmartChainPancakeswapSyrupCakeContractPositionFetcher } from './binance-smart-chain/pancakeswap.syrup-cake.contract-position-fetcher';
+import { BinanceSmartChainPancakeswapSyrupStakingInitContractPositionFetcher } from './binance-smart-chain/pancakeswap.syrup-staking-init.contract-position-fetcher';
 import { BinanceSmartChainPancakeswapSyrupStakingContractPositionFetcher } from './binance-smart-chain/pancakeswap.syrup-staking.contract-position-fetcher';
 import { PancakeswapContractFactory } from './contracts';
 
@@ -25,8 +27,10 @@ import { PancakeswapContractFactory } from './contracts';
     BinanceSmartChainPancakeSwapBoostedFarmV2ContractPositionFetcher,
     BinanceSmartChainPancakeswapSyrupCakeContractPositionFetcher,
     BinanceSmartChainPancakeswapSyrupStakingContractPositionFetcher,
+    BinanceSmartChainPancakeswapSyrupStakingInitContractPositionFetcher,
     BinanceSmartChainPancakeSwapPoolTokenFetcher,
     BinanceSmartChainPancakeswapPoolAddressCacheManager,
+    BinanceSmartChainPancakeswapStablePoolTokenFetcher,
   ],
 })
 export class PancakeSwapAppModule extends AbstractApp() {}

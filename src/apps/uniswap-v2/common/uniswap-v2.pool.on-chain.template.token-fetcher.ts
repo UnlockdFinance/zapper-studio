@@ -9,6 +9,7 @@ import { getLabelFromToken } from '~app-toolkit/helpers/presentation/image.prese
 import { isMulticallUnderlyingError } from '~multicall/multicall.ethers';
 import { AppTokenTemplatePositionFetcher } from '~position/template/app-token.template.position-fetcher';
 import {
+  DefaultAppTokenDataProps,
   DefaultAppTokenDefinition,
   GetAddressesParams,
   GetDataPropsParams,
@@ -17,11 +18,8 @@ import {
   GetUnderlyingTokensParams,
 } from '~position/template/app-token.template.types';
 
-export type UniswapV2TokenDataProps = {
-  liquidity: number;
-  reserves: number[];
+export type UniswapV2TokenDataProps = DefaultAppTokenDataProps & {
   fee: number;
-  apy: number;
   volume: number;
 };
 
@@ -78,18 +76,6 @@ export abstract class UniswapV2PoolOnChainTemplateTokenFetcher<
     const reserves = [Number(reserve0) / 10 ** token0.decimals, Number(reserve1) / 10 ** token1.decimals];
     const pricePerShare = reserves.map(r => r / appToken.supply);
     return pricePerShare;
-  }
-
-  async getLiquidity({ appToken }: GetDataPropsParams<T>) {
-    return appToken.supply * appToken.price;
-  }
-
-  async getReserves({ appToken }: GetDataPropsParams<T>) {
-    return (appToken.pricePerShare as number[]).map(v => v * appToken.supply);
-  }
-
-  async getApy(_params: GetDataPropsParams<T, UniswapV2TokenDataProps>) {
-    return 0;
   }
 
   async getDataProps(params: GetDataPropsParams<T, UniswapV2TokenDataProps>) {

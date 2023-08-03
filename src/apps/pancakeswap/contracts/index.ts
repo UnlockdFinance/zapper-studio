@@ -4,15 +4,20 @@ import { IAppToolkit, APP_TOOLKIT } from '~app-toolkit/app-toolkit.interface';
 import { ContractFactory } from '~contract/contracts';
 import { Network } from '~types/network.interface';
 
-import { PancakeswapCakeChef__factory } from './ethers';
-import { PancakeswapChef__factory } from './ethers';
-import { PancakeswapChefV2__factory } from './ethers';
-import { PancakeswapFactory__factory } from './ethers';
-import { PancakeswapFarmBooster__factory } from './ethers';
-import { PancakeswapIfoChef__factory } from './ethers';
-import { PancakeswapPair__factory } from './ethers';
-import { PancakeswapSmartChef__factory } from './ethers';
-import { PancakeswapSyrupCake__factory } from './ethers';
+import {
+  PancakeswapCakeChef__factory,
+  PancakeswapChef__factory,
+  PancakeswapChefV2__factory,
+  PancakeswapFactory__factory,
+  PancakeswapFarmBooster__factory,
+  PancakeswapIfoChef__factory,
+  PancakeswapPair__factory,
+  PancakeswapSmartChef__factory,
+  PancakeswapSmartChefInit__factory,
+  PancakeswapStablePool__factory,
+  PancakeswapStablePoolRegistry__factory,
+  PancakeswapSyrupCake__factory,
+} from './ethers';
 
 // eslint-disable-next-line
 type ContractOpts = { address: string; network: Network };
@@ -47,6 +52,15 @@ export class PancakeswapContractFactory extends ContractFactory {
   pancakeswapSmartChef({ address, network }: ContractOpts) {
     return PancakeswapSmartChef__factory.connect(address, this.appToolkit.getNetworkProvider(network));
   }
+  pancakeswapSmartChefInit({ address, network }: ContractOpts) {
+    return PancakeswapSmartChefInit__factory.connect(address, this.appToolkit.getNetworkProvider(network));
+  }
+  pancakeswapStablePool({ address, network }: ContractOpts) {
+    return PancakeswapStablePool__factory.connect(address, this.appToolkit.getNetworkProvider(network));
+  }
+  pancakeswapStablePoolRegistry({ address, network }: ContractOpts) {
+    return PancakeswapStablePoolRegistry__factory.connect(address, this.appToolkit.getNetworkProvider(network));
+  }
   pancakeswapSyrupCake({ address, network }: ContractOpts) {
     return PancakeswapSyrupCake__factory.connect(address, this.appToolkit.getNetworkProvider(network));
   }
@@ -60,4 +74,7 @@ export type { PancakeswapFarmBooster } from './ethers';
 export type { PancakeswapIfoChef } from './ethers';
 export type { PancakeswapPair } from './ethers';
 export type { PancakeswapSmartChef } from './ethers';
+export type { PancakeswapSmartChefInit } from './ethers';
+export type { PancakeswapStablePool } from './ethers';
+export type { PancakeswapStablePoolRegistry } from './ethers';
 export type { PancakeswapSyrupCake } from './ethers';

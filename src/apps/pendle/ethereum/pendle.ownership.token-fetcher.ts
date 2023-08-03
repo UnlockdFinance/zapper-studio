@@ -1,7 +1,7 @@
 import { Inject } from '@nestjs/common';
 import BigNumber from 'bignumber.js';
 import { range } from 'lodash';
-import moment from 'moment';
+import { unix } from 'moment';
 
 import { IAppToolkit, APP_TOOLKIT } from '~app-toolkit/app-toolkit.interface';
 import { ZERO_ADDRESS } from '~app-toolkit/constants/address';
@@ -149,18 +149,6 @@ export class EthereumPendleOwnershipTokenFetcher extends AppTokenTemplatePositio
     return [otPrice / appToken.tokens[0].price];
   }
 
-  async getLiquidity({ appToken }: GetDataPropsParams<PendleOwnershipToken>) {
-    return appToken.supply * appToken.price;
-  }
-
-  async getReserves({ appToken }: GetDataPropsParams<PendleOwnershipToken>) {
-    return [appToken.pricePerShare[0] * appToken.supply];
-  }
-
-  async getApy(_params: GetDataPropsParams<PendleOwnershipToken>) {
-    return 0;
-  }
-
   async getDataProps(
     params: GetDataPropsParams<PendleOwnershipToken, PendleOwnershipTokenDataProps, PendleOwnershipTokenDefinition>,
   ) {
@@ -186,6 +174,6 @@ export class EthereumPendleOwnershipTokenFetcher extends AppTokenTemplatePositio
     PendleOwnershipTokenDefinition
   >): Promise<string | number | DollarDisplayItem | PercentageDisplayItem | undefined> {
     const { expiry } = appToken.dataProps;
-    return `Expires ${moment.unix(expiry).format('LL')}`;
+    return `Expires ${unix(expiry).format('LL')}`;
   }
 }
