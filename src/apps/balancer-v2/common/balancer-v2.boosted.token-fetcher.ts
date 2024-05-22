@@ -8,15 +8,14 @@ import { AppTokenTemplatePositionFetcher } from '~position/template/app-token.te
 import {
   DefaultAppTokenDataProps,
   DefaultAppTokenDefinition,
-  GetAddressesParams,
   GetDisplayPropsParams,
   GetPricePerShareParams,
   GetTokenPropsParams,
   GetUnderlyingTokensParams,
 } from '~position/template/app-token.template.types';
 
-import { BalancerV2ContractFactory } from '../contracts';
-import { BalancerBoostedPool } from '../contracts/ethers/BalancerBoostedPool';
+import { BalancerV2ViemContractFactory } from '../contracts';
+import { BalancerBoostedPool } from '../contracts/viem/BalancerBoostedPool';
 
 type GetBoostedResponse = {
   pools: {
@@ -35,7 +34,7 @@ const GET_BOOSTED_QUERY = gql`
 export abstract class BalancerV2PoolTokenFetcher extends AppTokenTemplatePositionFetcher<BalancerBoostedPool> {
   constructor(
     @Inject(APP_TOOLKIT) protected readonly appToolkit: IAppToolkit,
-    @Inject(BalancerV2ContractFactory) protected readonly contractFactory: BalancerV2ContractFactory,
+    @Inject(BalancerV2ViemContractFactory) protected readonly contractFactory: BalancerV2ViemContractFactory,
   ) {
     super(appToolkit);
   }
@@ -43,35 +42,31 @@ export abstract class BalancerV2PoolTokenFetcher extends AppTokenTemplatePositio
   abstract subgraphUrl: string;
   abstract vaultAddress: string;
 
-  getContract(address: string): BalancerBoostedPool {
+  getContract(address: string) {
     return this.contractFactory.balancerBoostedPool({ address, network: this.network });
   }
 
-  async getDefinitions(): Promise<{ address: string }[]> {
+  async getAddresses() {
     const poolsResponse = await gqlFetch<GetBoostedResponse>({
       endpoint: this.subgraphUrl,
       query: GET_BOOSTED_QUERY,
     });
 
-    return poolsResponse.pools;
-  }
-
-  async getAddresses({ definitions }: GetAddressesParams) {
-    return definitions.map(v => v.address);
+    return poolsResponse.pools.map(x => x.address);
   }
 
   async getSupply({
     contract,
   }: GetTokenPropsParams<BalancerBoostedPool, DefaultAppTokenDataProps, DefaultAppTokenDefinition>) {
-    return contract.getVirtualSupply();
+    return contract.read.getVirtualSupply();
   }
 
   async getUnderlyingTokenDefinitions({ contract, multicall }: GetUnderlyingTokensParams<BalancerBoostedPool>) {
     const _vault = this.contractFactory.balancerVault({ address: this.vaultAddress, network: this.network });
     const vault = multicall.wrap(_vault);
 
-    const poolId = await contract.getPoolId();
-    const { tokens } = await vault.getPoolTokens(poolId);
+    const poolId = await contract.read.getPoolId();
+    const [tokens] = await vault.read.getPoolTokens([poolId]);
     return [{ address: tokens[tokens.length - 1], network: this.network }];
   }
 
@@ -82,9 +77,13 @@ export abstract class BalancerV2PoolTokenFetcher extends AppTokenTemplatePositio
     });
     const boosted = multicall.wrap(_boosted);
 
-    const decimals = await boosted.decimals();
-    const ratio = await boosted.getWrappedTokenRate();
-    return [Number(ratio) / 10 ** Number(decimals)];
+    try {
+      const [decimals, ratioRaw] = await Promise.all([boosted.read.decimals(), boosted.read.getWrappedTokenRate()]);
+
+      return [Number(ratioRaw) / 10 ** Number(decimals)];
+    } catch (error) {
+      return [0];
+    }
   }
 
   async getLabel({ appToken }: GetDisplayPropsParams<BalancerBoostedPool>): Promise<string> {

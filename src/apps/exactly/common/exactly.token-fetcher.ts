@@ -1,5 +1,5 @@
 import { Inject } from '@nestjs/common';
-import { constants, type BigNumber } from 'ethers';
+import { BigNumber, constants } from 'ethers';
 
 import { APP_TOOLKIT, type IAppToolkit } from '~app-toolkit/app-toolkit.interface';
 import { getLabelFromToken } from '~app-toolkit/helpers/presentation/image.present';
@@ -16,7 +16,8 @@ import type {
   GetDisplayPropsParams,
 } from '~position/template/app-token.template.types';
 
-import { ExactlyContractFactory, type Market } from '../contracts';
+import { ExactlyViemContractFactory } from '../contracts';
+import { Market } from '../contracts/viem';
 
 import { ExactlyDefinitionsResolver, type ExactlyMarketDefinition } from './exactly.definitions-resolver';
 
@@ -27,7 +28,7 @@ export abstract class ExactlyTokenFetcher<
 > extends AppTokenTemplatePositionFetcher<Market, V, ExactlyMarketDefinition> {
   constructor(
     @Inject(APP_TOOLKIT) protected readonly appToolkit: IAppToolkit,
-    @Inject(ExactlyContractFactory) protected readonly contractFactory: ExactlyContractFactory,
+    @Inject(ExactlyViemContractFactory) protected readonly contractFactory: ExactlyViemContractFactory,
     @Inject(ExactlyDefinitionsResolver) protected readonly definitionsResolver: ExactlyDefinitionsResolver,
   ) {
     super(appToolkit);
@@ -73,7 +74,7 @@ export abstract class ExactlyTokenFetcher<
   async getPricePerShare(params: GetPricePerShareParams<Market, V, ExactlyMarketDefinition>) {
     const [supply, totalAssets] = await Promise.all([this.getSupply(params), this.getTotalAssets(params)]);
     if (!BigInt(String(supply))) return [1];
-    return [Number(totalAssets.mul(constants.WeiPerEther).div(supply)) / 1e18];
+    return [Number(BigNumber.from(totalAssets).mul(constants.WeiPerEther).div(supply)) / 1e18];
   }
 
   async getApy(params: GetDataPropsParams<Market, V, ExactlyMarketDefinition>) {

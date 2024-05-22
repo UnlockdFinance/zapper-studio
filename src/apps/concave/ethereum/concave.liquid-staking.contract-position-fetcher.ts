@@ -1,5 +1,5 @@
 import { Inject } from '@nestjs/common';
-import { BigNumberish } from 'ethers';
+import { BigNumber, BigNumberish } from 'ethers';
 import { getAddress } from 'ethers/lib/utils';
 import { gql } from 'graphql-request';
 import { sumBy } from 'lodash';
@@ -9,7 +9,6 @@ import { IAppToolkit, APP_TOOLKIT } from '~app-toolkit/app-toolkit.interface';
 import { PositionTemplate } from '~app-toolkit/decorators/position-template.decorator';
 import { drillBalance } from '~app-toolkit/helpers/drill-balance.helper';
 import { gqlFetch } from '~app-toolkit/helpers/the-graph.helper';
-import { ContractType } from '~position/contract.interface';
 import { DefaultDataProps } from '~position/display.interface';
 import { ContractPositionBalance } from '~position/position-balance.interface';
 import { MetaType } from '~position/position.interface';
@@ -17,7 +16,8 @@ import { isClaimable, isSupplied } from '~position/position.utils';
 import { GetTokenBalancesParams, GetTokenDefinitionsParams } from '~position/template/contract-position.template.types';
 import { CustomContractPositionTemplatePositionFetcher } from '~position/template/custom-contract-position.template.position-fetcher';
 
-import { ConcaveContractFactory, Lsdcnv } from '../contracts';
+import { ConcaveViemContractFactory } from '../contracts';
+import { Lsdcnv } from '../contracts/viem';
 
 export type ConcaveStakingV1Lock = {
   deposit: string;
@@ -61,12 +61,12 @@ export class EthereumConcaveLiquidStakingContractPositionFetcher extends CustomC
 
   constructor(
     @Inject(APP_TOOLKIT) protected readonly appToolkit: IAppToolkit,
-    @Inject(ConcaveContractFactory) protected readonly concaveContractFactory: ConcaveContractFactory,
+    @Inject(ConcaveViemContractFactory) protected readonly concaveContractFactory: ConcaveViemContractFactory,
   ) {
     super(appToolkit);
   }
 
-  getContract(address: string): Lsdcnv {
+  getContract(address: string) {
     return this.concaveContractFactory.lsdcnv({ address, network: this.network });
   }
 
@@ -98,7 +98,7 @@ export class EthereumConcaveLiquidStakingContractPositionFetcher extends CustomC
   }
 
   async getBalances(address: string): Promise<ContractPositionBalance<ConcaveLsdcnvContractPositionDataProps>[]> {
-    const multicall = this.appToolkit.getMulticall(this.network);
+    const multicall = this.appToolkit.getViemMulticall(this.network);
     const [lsdCnv] = await this.appToolkit.getAppContractPositions({
       appId: this.appId,
       network: this.network,
@@ -106,7 +106,7 @@ export class EthereumConcaveLiquidStakingContractPositionFetcher extends CustomC
     });
 
     const contract = multicall.wrap(this.getContract(lsdCnv.address));
-    const balanceRaw = await contract.balanceOf(address);
+    const balanceRaw = await contract.read.balanceOf([address]);
     if (Number(balanceRaw) === 0) return [];
 
     const lockData = await gqlFetch<ConcaveStakingV1LockData>({
@@ -122,14 +122,14 @@ export class EthereumConcaveLiquidStakingContractPositionFetcher extends CustomC
         const label = `Liquid Staking (#${positionId}) - Unlock: ${unlockDate}`;
 
         const [positionInfo, positionRewardInfo] = await Promise.all([
-          multicall.wrap(contract).positions(positionId),
-          multicall.wrap(contract).viewPositionRewards(positionId),
+          multicall.wrap(contract).read.positions([BigInt(positionId)]),
+          multicall.wrap(contract).read.viewPositionRewards([BigInt(positionId)]),
         ]);
 
         const stakedToken = lsdCnv.tokens.find(isSupplied)!;
         const rewardToken = lsdCnv.tokens.find(isClaimable)!;
-        const stakedTokenBalance = drillBalance(stakedToken, positionInfo.deposit.toString());
-        const rewardBalanceRaw = positionRewardInfo.totalRewards.sub(positionRewardInfo.amountDeposited).toString();
+        const stakedTokenBalance = drillBalance(stakedToken, positionInfo[4].toString());
+        const rewardBalanceRaw = BigNumber.from(positionRewardInfo[3]).sub(positionRewardInfo[0]).toString();
         const rewardTokenBalance = drillBalance(rewardToken, rewardBalanceRaw);
         const tokens = [stakedTokenBalance, rewardTokenBalance];
         const balanceUSD = sumBy(tokens, v => v.balanceUSD);

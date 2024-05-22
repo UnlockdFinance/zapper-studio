@@ -6,15 +6,16 @@ import { ArbitrumBeefyBoostVaultContractPositionFetcher } from './arbitrum/beefy
 import { ArbitrumBeefyVaultTokenFetcher } from './arbitrum/beefy.vault.token-fetcher';
 import { AvalancheBeefyBoostVaultContractPositionFetcher } from './avalanche/beefy.boost-vault.contract-position-fetcher';
 import { AvalancheBeefyVaultTokenFetcher } from './avalanche/beefy.vault.token-fetcher';
+import { BaseBeefyBoostVaultContractPositionFetcher } from './base/beefy.boost-vault.contract-position-fetcher';
+import { BaseBeefyVaultTokenFetcher } from './base/beefy.vault.token-fetcher';
 import { BinanceSmartChainBeefyBoostVaultContractPositionFetcher } from './binance-smart-chain/beefy.boost-vault.contract-position-fetcher';
 import { BinanceSmartChainBeefyVaultTokenFetcher } from './binance-smart-chain/beefy.vault.token-fetcher';
 import { BeefyBoostVaultDefinitionsResolver } from './common/beefy.boost-vault.definition-resolver';
 import { BeefyVaultTokenDefinitionsResolver } from './common/beefy.vault.token-definition-resolver';
-import { BeefyContractFactory } from './contracts';
+import { BeefyViemContractFactory } from './contracts';
 import { EthereumBeefyVaultTokenFetcher } from './ethereum/beefy.vault.token-fetcher';
 import { FantomBeefyBoostVaultContractPositionFetcher } from './fantom/beefy.boost-vault.contract-position-fetcher';
 import { FantomBeefyVaultTokenFetcher } from './fantom/beefy.vault.token-fetcher';
-import { MoonriverBeefyVaultTokenFetcher } from './moonriver/beefy.vault.token-fetcher';
 import { OptimismBeefyBoostVaultContractPositionFetcher } from './optimism/beefy.boost-vault.contract-position-fetcher';
 import { OptimismBeefyVaultTokenFetcher } from './optimism/beefy.vault.token-fetcher';
 import { PolygonBeefyBoostVaultContractPositionFetcher } from './polygon/beefy.boost-vault.contract-position-fetcher';
@@ -22,7 +23,7 @@ import { PolygonBeefyVaultTokenFetcher } from './polygon/beefy.vault.token-fetch
 
 @Module({
   providers: [
-    BeefyContractFactory,
+    BeefyViemContractFactory,
     // Helpers
     BeefyVaultTokenDefinitionsResolver,
     BeefyBoostVaultDefinitionsResolver,
@@ -32,6 +33,9 @@ import { PolygonBeefyVaultTokenFetcher } from './polygon/beefy.vault.token-fetch
     // Avalanche
     AvalancheBeefyVaultTokenFetcher,
     AvalancheBeefyBoostVaultContractPositionFetcher,
+    // Base
+    BaseBeefyVaultTokenFetcher,
+    BaseBeefyBoostVaultContractPositionFetcher,
     // Binance Smart Chain
     BinanceSmartChainBeefyVaultTokenFetcher,
     BinanceSmartChainBeefyBoostVaultContractPositionFetcher,
@@ -40,8 +44,6 @@ import { PolygonBeefyVaultTokenFetcher } from './polygon/beefy.vault.token-fetch
     // Fantom
     FantomBeefyVaultTokenFetcher,
     FantomBeefyBoostVaultContractPositionFetcher,
-    // Moonriver
-    MoonriverBeefyVaultTokenFetcher,
     // Optimism
     OptimismBeefyVaultTokenFetcher,
     OptimismBeefyBoostVaultContractPositionFetcher,

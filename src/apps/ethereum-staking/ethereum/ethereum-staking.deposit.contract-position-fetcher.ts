@@ -19,7 +19,8 @@ import {
   GetTokenDefinitionsParams,
 } from '~position/template/contract-position.template.types';
 
-import { EthereumStakingContractFactory, EthereumStakingDeposit } from '../contracts';
+import { EthereumStakingViemContractFactory } from '../contracts';
+import { EthereumStakingDeposit } from '../contracts/viem';
 
 type Eth2DepositsResponse = {
   deposits: {
@@ -49,7 +50,7 @@ type BeaconChainValidator = {
   }[];
 };
 
-const SUBGRAPH_DEPOSITS_ENDPOINT = `https://api.thegraph.com/subgraphs/name/terryyyyyy/eth2staking`;
+const SUBGRAPH_DEPOSITS_ENDPOINT = `https://api.thegraph.com/subgraphs/name/terryyyyyy/eth2staking?source=zapper`;
 const BEACON_CHAIN_API_ENDPOINT = `https://beaconcha.in/api/v1`;
 
 const ETH2_DEPOSITS_QUERY = gql`
@@ -68,12 +69,12 @@ export class EthereumEthereumStakingDepositContractPositionFetcher extends Contr
 
   constructor(
     @Inject(APP_TOOLKIT) protected readonly appToolkit: IAppToolkit,
-    @Inject(EthereumStakingContractFactory) protected readonly contractFactory: EthereumStakingContractFactory,
+    @Inject(EthereumStakingViemContractFactory) protected readonly contractFactory: EthereumStakingViemContractFactory,
   ) {
     super(appToolkit);
   }
 
-  getContract(address: string): EthereumStakingDeposit {
+  getContract(address: string) {
     return this.contractFactory.ethereumStakingDeposit({ address, network: this.network });
   }
 
